@@ -16,7 +16,7 @@ env:
 
 jobs:
   build:
-    runs-on: macos-15
+    runs-on: macos-26
     timeout-minutes: 120
     steps:
       - uses: actions/checkout@v4
@@ -51,13 +51,18 @@ jobs:
           WS=$(ls -d ios/*.xcworkspace | head -1)
           SCHEME=$(xcodebuild -workspace "$WS" -list | awk '/Schemes:/{f=1;next} f&&NF{print $1; exit}')
           echo "workspace=$WS scheme=$SCHEME"
-          xcodebuild \
-            -workspace "$WS" -scheme "$SCHEME" \
-            -configuration Release -sdk iphoneos \
-            -derivedDataPath build \
-            CODE_SIGNING_ALLOWED=NO CODE_SIGNING_REQUIRED=NO CODE_SIGN_IDENTITY="" \
-            ARCHS=arm64 | tail -400
-
+          set +e
+          xcodebuild             -workspace "$WS" -scheme "$SCHEME"             -configuration Release -sdk iphoneos             -derivedDataPath build             CODE_SIGNING_ALLOWED=NO CODE_SIGNING_REQUIRED=NO CODE_SIGN_IDENTITY=""             ARCHS=arm64 > xcodebuild.log 2>&1
+          rc=$?
+          set -e
+          if [ $rc -ne 0 ]; then
+            echo "==== 编译失败，关键错误 ===="
+            grep -nE "error:|Error:|BUILD FAILED|The following build commands failed" -A3 xcodebuild.log | tail -120 || true
+            echo "==== 最后 80 行 ===="
+            tail -80 xcodebuild.log
+            exit $rc
+          fi
+          tail -15 xcodebuild.log
       - name: 打包 IPA
         run: |
           APP=$(find build/Build/Products/Release-iphoneos -maxdepth 1 -name "*.app" | head -1)
@@ -68,6 +73,14 @@ jobs:
           cp -R "$APP" Payload/
           zip -qry family-nas-ios.ipa Payload
           ls -lh family-nas-ios.ipa
+
+      - name: 上传编译日志（仅失败时）
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: xcodebuild-log
+          path: xcodebuild.log
+          if-no-files-found: ignore
 
       - name: 上传产物
         uses: actions/upload-artifact@v4
