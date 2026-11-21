@@ -1,0 +1,79 @@
+name: Build iOS IPA (unsigned)
+
+# 生成未签名 IPA，用 TrollStore / Sideloadly 安装。
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: macos-15
+    timeout-minutes: 120
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: 安装依赖
+        run: npm ci --no-audit --no-fund
+
+      - name: Expo prebuild（生成 ios 工程）
+        run: npx expo prebuild -p ios --no-install
+        env:
+          CI: '1'
+
+      - name: CocoaPods install
+        working-directory: ios
+        run: pod install --repo-update
+
+      - name: 环境与工程信息
+        run: |
+          xcodebuild -version
+          xcrun --sdk iphoneos --show-sdk-version
+          ls ios
+          xcodebuild -workspace ios/*.xcworkspace -list
+
+      - name: 编译（不签名）
+        run: |
+          set -o pipefail
+          WS=$(ls -d ios/*.xcworkspace | head -1)
+          SCHEME=$(xcodebuild -workspace "$WS" -list | awk '/Schemes:/{f=1;next} f&&NF{print $1; exit}')
+          echo "workspace=$WS scheme=$SCHEME"
+          xcodebuild \
+            -workspace "$WS" -scheme "$SCHEME" \
+            -configuration Release -sdk iphoneos \
+            -derivedDataPath build \
+            CODE_SIGNING_ALLOWED=NO CODE_SIGNING_REQUIRED=NO CODE_SIGN_IDENTITY="" \
+            ARCHS=arm64 | tail -400
+
+      - name: 打包 IPA
+        run: |
+          APP=$(find build/Build/Products/Release-iphoneos -maxdepth 1 -name "*.app" | head -1)
+          echo "app=$APP"
+          test -d "$APP"
+          rm -rf Payload family-nas-ios.ipa
+          mkdir -p Payload
+          cp -R "$APP" Payload/
+          zip -qry family-nas-ios.ipa Payload
+          ls -lh family-nas-ios.ipa
+
+      - name: 上传产物
+        uses: actions/upload-artifact@v4
+        with:
+          name: family-nas-ios-ipa
+          path: family-nas-ios.ipa
+
+      - name: 更新 latest-ipa 发行版
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release view latest-ipa >/dev/null 2>&1 || gh release create latest-ipa --title "latest IPA" --notes "家庭网盘 iOS 未签名 IPA（最新构建）"
+          gh release upload latest-ipa family-nas-ios.ipa --clobber
