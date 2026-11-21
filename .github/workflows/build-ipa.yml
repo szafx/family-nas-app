@@ -10,6 +10,10 @@ concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
+env:
+  # 家庭账号长期令牌由仓库 Secret 注入，源码里不含
+  EXPO_PUBLIC_FAMILY_TOKEN: ${{ secrets.FAMILY_TOKEN }}
+
 jobs:
   build:
     runs-on: macos-15
