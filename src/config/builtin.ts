@@ -20,8 +20,8 @@ export const BUILTIN_FALLBACK_URL = 'https://pan-cf.szafx.icu';
 
 export const BUILTIN_USERNAME = 'family';
 
-/** 专用长期令牌（只存在安装包里，用于自动登录）。 */
-export const BUILTIN_TOKEN = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJGaWxlQnJvd3NlciBRdWFudHVtIiwiZXhwIjoxODI2MjMzOTY5LCJpYXQiOjE3OTQ2OTc5NjksImp0aSI6ImVhNzU5M2FkMDQzOGYyODE0YjJkNjUyYmRlZDk5MTg5In0.Q5Fq-MXZI2MVK-XZ3Oics5MR-1hsZN5G9Ah4I8Iov0o';
+/** 专用长期令牌：公开仓库里不含令牌，构建时由 CI 从 Secret 注入 EXPO_PUBLIC_FAMILY_TOKEN。 */
+export const BUILTIN_TOKEN = process.env.EXPO_PUBLIC_FAMILY_TOKEN ?? '';
 
 /** 更新清单：Gitee 上放同一份 JSON 即可切换过去。 */
 export const UPDATE_MANIFEST_URL = 'https://gitee.com/lazy-voice-jmy/family-nas/raw/master/version.json';
