@@ -1,7 +1,6 @@
 import Constants from 'expo-constants';
 import { Platform } from 'react-native';
 import { File, Paths, type DownloadProgress } from 'expo-file-system';
-import * as IntentLauncher from 'expo-intent-launcher';
 
 import { UPDATE_MANIFEST_FALLBACK_URL, UPDATE_MANIFEST_URL } from '@/config/builtin';
 
@@ -79,8 +78,11 @@ export async function downloadUpdate(
   return dest;
 }
 
-/** 交给系统安装器（Android 不允许静默安装，最后会弹一次系统确认框）。 */
+/** 交给系统安装器（Android 不允许静默安装，最后会弹一次系统确认框）。iOS 不走这里。 */
 export async function installUpdate(file: File): Promise<void> {
+  if (Platform.OS !== 'android') return;
+  // expo-intent-launcher 是 Android 专用模块，iOS 上导入会抛异常，必须按需加载
+  const IntentLauncher = await import('expo-intent-launcher');
   await IntentLauncher.startActivityAsync('android.intent.action.VIEW', {
     data: file.contentUri,
     type: 'application/vnd.android.package-archive',
