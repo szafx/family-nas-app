@@ -55,7 +55,7 @@ jobs:
           SCHEME=$(xcodebuild -workspace "$WS" -list | awk '/Schemes:/{f=1;next} f&&NF{print $1; exit}')
           echo "workspace=$WS scheme=$SCHEME"
           set +e
-          xcodebuild             -workspace "$WS" -scheme "$SCHEME"             -configuration Release -sdk iphoneos             -derivedDataPath build             CODE_SIGNING_ALLOWED=NO CODE_SIGNING_REQUIRED=NO CODE_SIGN_IDENTITY=""             ARCHS=arm64 > xcodebuild.log 2>&1
+          xcodebuild             -workspace "$WS" -scheme "$SCHEME"             -configuration Release -sdk iphoneos             -derivedDataPath build             CODE_SIGNING_ALLOWED=NO CODE_SIGNING_REQUIRED=NO CODE_SIGN_IDENTITY=""             ARCHS=arm64 IPHONEOS_DEPLOYMENT_TARGET=16.0 > xcodebuild.log 2>&1
           rc=$?
           set -e
           if [ $rc -ne 0 ]; then
