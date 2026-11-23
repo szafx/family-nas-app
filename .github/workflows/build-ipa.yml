@@ -85,6 +85,15 @@ jobs:
           t = t.replace(old1, new1).replace(old2, new2)
           io.open(p, 'w', encoding='utf-8').write(t)
           print('@expo/ui patched')
+          # ExpoModulesJSI 是 Swift Package，Package.swift 写死 iOS 16.4；降到 16.0
+          j = 'node_modules/expo-modules-jsi/apple'
+          ps = io.open(j + '/Package.swift', encoding='utf-8').read()
+          assert '.iOS("16.4")' in ps
+          io.open(j + '/Package.swift', 'w', encoding='utf-8').write(ps.replace('.iOS("16.4")', '.iOS("16.0")'))
+          pd = io.open(j + '/ExpoModulesJSI.podspec', encoding='utf-8').read()
+          pd = pd.replace(":ios => '16.4'", ":ios => '16.0'")
+          io.open(j + '/ExpoModulesJSI.podspec', 'w', encoding='utf-8').write(pd)
+          print('expo-modules-jsi patched')
           PY
 
       - name: 补丁 Podfile：所有 Pod 的部署目标降到 16.0
