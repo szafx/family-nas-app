@@ -6,7 +6,6 @@
     "node": "^26.0.0"
   },
   "dependencies": {
-    "@expo/ui": "~57.0.26",
     "@lunarr/mpv-player": "file:vendor/mpv-player",
     "@shopify/flash-list": "2.0.2",
     "@tanstack/react-query": "^5.104.2",
