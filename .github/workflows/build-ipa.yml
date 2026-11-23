@@ -43,34 +43,43 @@ jobs:
           import io
           p = 'node_modules/@expo/ui/ios/Modifiers/PresentationModifiers.swift'
           t = io.open(p, encoding='utf-8').read()
-          old1 = """  func body(content: Content) -> some View {
-    content.presentationCornerRadius(cornerRadius.map { CGFloat($0) })
-  }"""
-          new1 = """  func body(content: Content) -> some View {
-    if #available(iOS 16.4, tvOS 16.4, *) {
-      content.presentationCornerRadius(cornerRadius.map { CGFloat($0) })
-    } else {
-      content
-    }
-  }"""
-          old2 = """  func body(content: Content) -> some View {
-    if let shapeStyle = style?.toAnyShapeStyle() {
-      content.presentationBackground(shapeStyle)
-    } else {
-      content
-    }
-  }"""
-          new2 = """  func body(content: Content) -> some View {
-    if #available(iOS 16.4, tvOS 16.4, *) {
-      if let shapeStyle = style?.toAnyShapeStyle() {
-        content.presentationBackground(shapeStyle)
-      } else {
-        content
-      }
-    } else {
-      content
-    }
-  }"""
+          NL = chr(10)
+          old1 = NL.join([
+            '  func body(content: Content) -> some View {',
+            '    content.presentationCornerRadius(cornerRadius.map { CGFloat($0) })',
+            '  }',
+          ])
+          new1 = NL.join([
+            '  func body(content: Content) -> some View {',
+            '    if #available(iOS 16.4, tvOS 16.4, *) {',
+            '      content.presentationCornerRadius(cornerRadius.map { CGFloat($0) })',
+            '    } else {',
+            '      content',
+            '    }',
+            '  }',
+          ])
+          old2 = NL.join([
+            '  func body(content: Content) -> some View {',
+            '    if let shapeStyle = style?.toAnyShapeStyle() {',
+            '      content.presentationBackground(shapeStyle)',
+            '    } else {',
+            '      content',
+            '    }',
+            '  }',
+          ])
+          new2 = NL.join([
+            '  func body(content: Content) -> some View {',
+            '    if #available(iOS 16.4, tvOS 16.4, *) {',
+            '      if let shapeStyle = style?.toAnyShapeStyle() {',
+            '        content.presentationBackground(shapeStyle)',
+            '      } else {',
+            '        content',
+            '      }',
+            '    } else {',
+            '      content',
+            '    }',
+            '  }',
+          ])
           assert old1 in t, 'pattern1 missing'
           assert old2 in t, 'pattern2 missing'
           t = t.replace(old1, new1).replace(old2, new2)
