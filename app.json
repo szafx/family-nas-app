@@ -63,6 +63,10 @@
           "android": {
             "usesCleartextTraffic": true,
             "minSdkVersion": 26
+          },
+          "ios": {
+            "deploymentTarget": "16.0",
+            "usePrecompiledModules": false
           }
         }
       ],
