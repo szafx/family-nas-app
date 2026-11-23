@@ -87,6 +87,29 @@ jobs:
           print('@expo/ui patched')
           PY
 
+      - name: 补丁 Podfile：所有 Pod 的部署目标降到 16.0
+        run: |
+          python3 - <<'PY'
+          import io
+          p = 'ios/Podfile'
+          t = io.open(p, encoding='utf-8').read()
+          marker = 'post_install do |installer|'
+          assert marker in t, 'post_install marker missing'
+          NL = chr(10)
+          inject = NL.join([
+            marker,
+            '  # [CI] 所有 Pod 统一降级部署目标（兼容 iOS 16.2 设备）',
+            '  installer.pods_project.targets.each do |target|',
+            '    target.build_configurations.each do |config|',
+            "      config.build_settings['IPHONEOS_DEPLOYMENT_TARGET'] = '16.0'",
+            '    end',
+            '  end',
+          ])
+          t = t.replace(marker, inject, 1)
+          io.open(p, 'w', encoding='utf-8').write(t)
+          print('Podfile patched')
+          PY
+
       - name: CocoaPods install
         working-directory: ios
         run: pod install --repo-update
