@@ -151,7 +151,7 @@ jobs:
           def patch(path):
               with open(path, 'rb') as f:
                   data = f.read()
-              if len(data) < 32 or data[:4] != b'Ïúíþ':
+              if len(data) < 32 or data[:4] not in (bytes([0xCF,0xFA,0xED,0xFE]), bytes([0xCE,0xFA,0xED,0xFE])):
                   return False
               ncmds = struct.unpack_from('<I', data, 16)[0]
               off = 32
