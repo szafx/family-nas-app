@@ -196,7 +196,8 @@ jobs:
           path: xcodebuild.log
           if-no-files-found: ignore
 
-      - name: 上传 IPA 到 Gitee 发行版（供 App 内更新）
+      - name: 上传 IPA 到 Gitee 发行版（可选，失败不影响构建）
+        continue-on-error: true
         run: bash scripts/upload-gitee-ipa.sh
         env:
           GITEE_TOKEN: ${{ secrets.GITEE_TOKEN }}

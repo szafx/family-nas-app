@@ -26,7 +26,8 @@ export function currentVersionCode(): number {
 export function iosDownloadUrl(info: UpdateInfo): string {
   const withIpa = info as UpdateInfo & { ipa?: string };
   if (withIpa.ipa) return withIpa.ipa;
-  return info.url.replace(/\.apk(\?|$)/, '.ipa$1');
+  // Gitee 的大附件上传受限：iOS 更新统一指向 GitHub Actions 的 latest-ipa 直链
+  return 'https://github.com/szafx/family-nas-app/releases/download/latest-ipa/family-nas-ios.ipa';
 }
 
 export function currentVersionName(): string {
