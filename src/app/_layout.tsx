@@ -1,3 +1,4 @@
+import '@/lib/error-log';
 import { useLanguageSync } from '@/i18n';
 
 import { focusManager, QueryClient, QueryClientProvider } from '@tanstack/react-query';

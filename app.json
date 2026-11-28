@@ -104,7 +104,7 @@
     "owner": "sprytnyks-team",
     "ios": {
       "bundleIdentifier": "dev.sprytnyk.filebrowser",
-      "buildNumber": "13",
+      "buildNumber": "14",
       "supportsTablet": true,
       "infoPlist": {
         "ITSAppUsesNonExemptEncryption": false,
